@@ -1016,7 +1016,7 @@
 
         function downloadBook() {
             // Check if jsPDF is available
-            if (typeof window.jspdf === 'undefined') {
+            if (typeof window.jspdf === 'undefined' || !window.jspdf.jsPDF) {
                 alert('PDF download requires jsPDF library. Please ensure you have internet connection.\n\nAlternatively, you can:\n1. Take screenshots of the preview\n2. Use browser Print to PDF function\n3. Right-click canvas > Save image as PNG');
                 return;
             }
@@ -1112,8 +1112,7 @@
                 pdf.text('Notes & Reflections', pageWidth / 2, yPos, { align: 'center' });
                 
                 // Lines for notes
-                pdf.setDrawColor(255, 255, 255);
-                pdf.setGlobalAlpha(0.5);
+                pdf.setDrawColor(200, 200, 200); // Light gray instead of transparent white
                 for (let i = 0; i < 5; i++) {
                     yPos += 10;
                     pdf.line(20, yPos, pageWidth - 20, yPos);
