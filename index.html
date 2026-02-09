@@ -1015,6 +1015,12 @@
         }
 
         function downloadBook() {
+            // Check if jsPDF is available
+            if (typeof window.jspdf === 'undefined') {
+                alert('PDF download requires jsPDF library. Please ensure you have internet connection.\n\nAlternatively, you can:\n1. Take screenshots of the preview\n2. Use browser Print to PDF function\n3. Right-click canvas > Save image as PNG');
+                return;
+            }
+
             // Get selected checklist items
             const checklistItems = [];
             document.querySelectorAll('#checklistItems input[type="checkbox"]:checked').forEach(checkbox => {

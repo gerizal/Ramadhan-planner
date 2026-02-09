@@ -102,9 +102,14 @@ Built with:
 - CSS3
 - Vanilla JavaScript
 - Canvas API for poster generation
-- jsPDF for book PDF generation
+- jsPDF for book PDF generation (loaded from CDN)
 
-No complex setup or external dependencies required!
+**Note**: The PDF download feature requires an internet connection to load the jsPDF library. If PDF download is not available, you can:
+- Use your browser's "Print to PDF" function
+- Take screenshots of the canvas preview
+- Right-click the canvas and save as PNG image
+
+No complex setup required - just open `index.html` in your browser!
 
 ## 📱 Browser Compatibility
 
