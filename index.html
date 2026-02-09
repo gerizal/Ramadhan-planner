@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ramadhan 2026 Checklist Planner</title>
+    <title>Ramadhan 2026 Planner - Poster & Book</title>
+    <script src="https://unpkg.com/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -220,15 +221,152 @@
             color: #666;
             font-size: 0.9em;
         }
+
+        /* Format Toggle Section */
+        .format-toggle {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 15px;
+        }
+
+        .format-toggle h2 {
+            color: #764ba2;
+            margin-bottom: 15px;
+        }
+
+        .toggle-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .toggle-btn {
+            padding: 12px 30px;
+            font-size: 1em;
+            border: 2px solid #667eea;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: white;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .toggle-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .toggle-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        /* Book Layout Options */
+        .book-layout-section {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+
+        .book-layout-section h2 {
+            color: #764ba2;
+            margin-bottom: 20px;
+        }
+
+        .layout-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .layout-option {
+            cursor: pointer;
+            border: 3px solid #ddd;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            transition: all 0.3s;
+            background: white;
+        }
+
+        .layout-option:hover {
+            transform: scale(1.05);
+            border-color: #667eea;
+        }
+
+        .layout-option.active {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+
+        .layout-icon {
+            font-size: 3em;
+            margin-bottom: 10px;
+        }
+
+        .layout-name {
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .layout-desc {
+            font-size: 0.85em;
+            color: #666;
+        }
+
+        .hidden {
+            display: none !important;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>🌙 Ramadhan 2026 Checklist Planner</h1>
-            <p class="subtitle">Create your personalized Ramadhan checklist poster</p>
+            <h1>🌙 Ramadhan 2026 Planner</h1>
+            <p class="subtitle">Create your personalized Ramadhan tracker in poster or book format</p>
             <p class="subtitle"><em>Ramadhan 2026: Expected to start around February 17, 2026</em></p>
         </header>
+
+        <!-- Format Toggle -->
+        <div class="format-toggle">
+            <h2>📖 Choose Format</h2>
+            <div class="toggle-buttons">
+                <button class="toggle-btn active" id="posterFormatBtn" onclick="switchFormat('poster')">
+                    📄 Poster Format
+                </button>
+                <button class="toggle-btn" id="bookFormatBtn" onclick="switchFormat('book')">
+                    📚 Book Format (30 Days)
+                </button>
+            </div>
+        </div>
+
+        <!-- Book Layout Selection (Hidden by default) -->
+        <div class="book-layout-section hidden" id="bookLayoutSection">
+            <h2>📐 Select Book Layout</h2>
+            <div class="layout-options">
+                <div class="layout-option active" data-layout="daily">
+                    <div class="layout-icon">📅</div>
+                    <div class="layout-name">Daily Tracker</div>
+                    <div class="layout-desc">One page per day with checklist</div>
+                </div>
+                <div class="layout-option" data-layout="weekly">
+                    <div class="layout-icon">📊</div>
+                    <div class="layout-name">Weekly Spread</div>
+                    <div class="layout-desc">7 days per 2-page spread</div>
+                </div>
+                <div class="layout-option" data-layout="monthly">
+                    <div class="layout-icon">📆</div>
+                    <div class="layout-name">Monthly Overview</div>
+                    <div class="layout-desc">All 30 days in calendar view</div>
+                </div>
+            </div>
+        </div>
 
         <div class="content-wrapper">
             <div class="checklist-section">
@@ -309,12 +447,12 @@
         </div>
 
         <div class="button-group">
-            <button class="generate-btn" onclick="generatePoster()">✨ Generate Poster</button>
-            <button class="download-btn" id="downloadBtn" onclick="downloadPoster()" disabled>⬇️ Download Poster</button>
+            <button class="generate-btn" id="generateBtn" onclick="generateContent()">✨ Generate Poster</button>
+            <button class="download-btn" id="downloadBtn" onclick="downloadContent()" disabled>⬇️ Download Poster</button>
         </div>
 
         <div class="poster-preview">
-            <h2>Your Ramadhan Poster</h2>
+            <h2 id="previewTitle">Your Ramadhan Poster</h2>
             <canvas id="posterCanvas" width="800" height="1200"></canvas>
         </div>
 
@@ -325,6 +463,8 @@
 
     <script>
         let selectedDesign = 1;
+        let currentFormat = 'poster'; // 'poster' or 'book'
+        let selectedLayout = 'daily'; // 'daily', 'weekly', 'monthly'
         const canvas = document.getElementById('posterCanvas');
         const ctx = canvas.getContext('2d');
 
@@ -338,6 +478,56 @@
             6: { gradient: ['#30cfd0', '#330867'], textColor: '#ffffff', accentColor: '#ffd700' }
         };
 
+        // Ramadhan 2026 dates (approximate - starting February 17, 2026)
+        const ramadhanDates = [];
+        const startDate = new Date(2026, 1, 17); // February 17, 2026
+        for (let i = 0; i < 30; i++) {
+            const date = new Date(startDate);
+            date.setDate(startDate.getDate() + i);
+            ramadhanDates.push({
+                day: i + 1,
+                date: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+            });
+        }
+
+        // Format switching
+        function switchFormat(format) {
+            currentFormat = format;
+            
+            // Update button states
+            document.getElementById('posterFormatBtn').classList.toggle('active', format === 'poster');
+            document.getElementById('bookFormatBtn').classList.toggle('active', format === 'book');
+            
+            // Show/hide book layout section
+            document.getElementById('bookLayoutSection').classList.toggle('hidden', format === 'poster');
+            
+            // Update UI text
+            const generateBtn = document.getElementById('generateBtn');
+            const downloadBtn = document.getElementById('downloadBtn');
+            const previewTitle = document.getElementById('previewTitle');
+            
+            if (format === 'book') {
+                generateBtn.textContent = '✨ Generate Book';
+                downloadBtn.textContent = '⬇️ Download Book (PDF)';
+                previewTitle.textContent = 'Your Ramadhan Book Preview';
+            } else {
+                generateBtn.textContent = '✨ Generate Poster';
+                downloadBtn.textContent = '⬇️ Download Poster';
+                previewTitle.textContent = 'Your Ramadhan Poster';
+            }
+            
+            downloadBtn.disabled = true;
+        }
+
+        // Layout selection for book format
+        document.querySelectorAll('.layout-option').forEach(option => {
+            option.addEventListener('click', function() {
+                document.querySelectorAll('.layout-option').forEach(opt => opt.classList.remove('active'));
+                this.classList.add('active');
+                selectedLayout = this.dataset.layout;
+            });
+        });
+
         // Handle design selection
         document.querySelectorAll('.design-option').forEach(option => {
             option.addEventListener('click', function() {
@@ -346,6 +536,24 @@
                 selectedDesign = parseInt(this.dataset.design);
             });
         });
+
+        // Main generation function
+        function generateContent() {
+            if (currentFormat === 'poster') {
+                generatePoster();
+            } else {
+                generateBook();
+            }
+        }
+
+        // Download function
+        function downloadContent() {
+            if (currentFormat === 'poster') {
+                downloadPoster();
+            } else {
+                downloadBook();
+            }
+        }
 
         function generatePoster() {
             // Get selected checklist items
@@ -438,6 +646,298 @@
             canvas.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
 
+        function generateBook() {
+            // Get selected checklist items
+            const checklistItems = [];
+            document.querySelectorAll('#checklistItems input[type="checkbox"]:checked').forEach(checkbox => {
+                const label = document.querySelector(`label[for="${checkbox.id}"]`);
+                checklistItems.push(label.textContent);
+            });
+
+            if (checklistItems.length === 0) {
+                alert('Please select at least one checklist item!');
+                return;
+            }
+
+            // Generate based on selected layout
+            switch(selectedLayout) {
+                case 'daily':
+                    generateDailyLayout(checklistItems);
+                    break;
+                case 'weekly':
+                    generateWeeklyLayout(checklistItems);
+                    break;
+                case 'monthly':
+                    generateMonthlyLayout(checklistItems);
+                    break;
+            }
+
+            // Enable download button
+            document.getElementById('downloadBtn').disabled = false;
+
+            // Scroll to preview
+            canvas.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        function generateDailyLayout(checklistItems) {
+            // Show first page as preview (Day 1)
+            const design = designs[selectedDesign];
+            
+            // Adjust canvas size for book page
+            canvas.width = 600;
+            canvas.height = 800;
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw gradient background
+            const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+            gradient.addColorStop(0, design.gradient[0]);
+            gradient.addColorStop(1, design.gradient[1]);
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Draw day number
+            ctx.fillStyle = design.textColor;
+            ctx.font = 'bold 80px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('Day 1', canvas.width / 2, 100);
+
+            // Draw date
+            ctx.font = '28px Arial';
+            ctx.fillStyle = design.accentColor;
+            ctx.fillText(ramadhanDates[0].date + ', 2026', canvas.width / 2, 140);
+
+            // Draw title
+            ctx.font = 'bold 32px Arial';
+            ctx.fillStyle = design.textColor;
+            ctx.fillText('🌙 My Daily Goals', canvas.width / 2, 190);
+
+            // Draw checklist
+            const startY = 240;
+            const itemHeight = 50;
+            ctx.textAlign = 'left';
+            ctx.font = '20px Arial';
+
+            for (let i = 0; i < Math.min(checklistItems.length, 10); i++) {
+                const y = startY + (i * itemHeight);
+                
+                // Draw item background
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+                ctx.fillRect(40, y - 30, canvas.width - 80, 45);
+                
+                // Draw checkbox
+                ctx.fillStyle = design.textColor;
+                ctx.strokeStyle = design.textColor;
+                ctx.lineWidth = 2;
+                ctx.strokeRect(55, y - 18, 24, 24);
+                
+                // Draw item text (truncate if too long)
+                ctx.fillStyle = design.textColor;
+                const text = checklistItems[i].length > 35 ? checklistItems[i].substring(0, 32) + '...' : checklistItems[i];
+                ctx.fillText(text, 90, y);
+            }
+
+            // Draw notes section
+            const notesY = startY + (Math.min(checklistItems.length, 10) * itemHeight) + 40;
+            ctx.fillStyle = design.textColor;
+            ctx.font = 'bold 24px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('✍️ Notes & Reflections', canvas.width / 2, notesY);
+            
+            // Draw lines for notes
+            ctx.strokeStyle = design.textColor;
+            ctx.lineWidth = 1;
+            ctx.globalAlpha = 0.3;
+            for (let i = 0; i < 3; i++) {
+                const lineY = notesY + 35 + (i * 30);
+                ctx.beginPath();
+                ctx.moveTo(50, lineY);
+                ctx.lineTo(canvas.width - 50, lineY);
+                ctx.stroke();
+            }
+            ctx.globalAlpha = 1;
+
+            // Draw footer
+            ctx.font = 'italic 18px Arial';
+            ctx.fillStyle = design.accentColor;
+            ctx.textAlign = 'center';
+            ctx.fillText('1 of 30', canvas.width / 2, canvas.height - 30);
+
+            // Add small decorative crescents
+            drawSmallCrescent(50, 50, 10, design.accentColor);
+            drawSmallCrescent(canvas.width - 50, 50, 10, design.accentColor);
+        }
+
+        function generateWeeklyLayout(checklistItems) {
+            // Show first week spread as preview
+            const design = designs[selectedDesign];
+            
+            // Wider canvas for 2-page spread
+            canvas.width = 1200;
+            canvas.height = 800;
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw gradient background
+            const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+            gradient.addColorStop(0, design.gradient[0]);
+            gradient.addColorStop(1, design.gradient[1]);
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Draw week title
+            ctx.fillStyle = design.textColor;
+            ctx.font = 'bold 48px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('🌙 Week 1', canvas.width / 2, 60);
+
+            // Draw subtitle
+            ctx.font = '24px Arial';
+            ctx.fillStyle = design.accentColor;
+            ctx.fillText('Days 1-7 | ' + ramadhanDates[0].date + ' - ' + ramadhanDates[6].date, canvas.width / 2, 100);
+
+            // Draw 7 day columns
+            const colWidth = (canvas.width - 100) / 7;
+            const startX = 50;
+            const startY = 140;
+
+            for (let day = 0; day < 7; day++) {
+                const x = startX + (day * colWidth);
+                
+                // Draw day header
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+                ctx.fillRect(x, startY, colWidth - 10, 60);
+                
+                ctx.fillStyle = design.textColor;
+                ctx.font = 'bold 24px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('Day ' + (day + 1), x + colWidth / 2 - 5, startY + 25);
+                
+                ctx.font = '14px Arial';
+                ctx.fillStyle = design.accentColor;
+                ctx.fillText(ramadhanDates[day].date, x + colWidth / 2 - 5, startY + 48);
+
+                // Draw checkboxes for each item
+                ctx.textAlign = 'left';
+                ctx.font = '14px Arial';
+                for (let i = 0; i < Math.min(checklistItems.length, 8); i++) {
+                    const itemY = startY + 80 + (i * 65);
+                    
+                    // Draw checkbox
+                    ctx.strokeStyle = design.textColor;
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(x + 10, itemY, 20, 20);
+                    
+                    // Draw item text on first column only
+                    if (day === 0) {
+                        ctx.fillStyle = design.textColor;
+                        const itemText = checklistItems[i].substring(0, 15);
+                        ctx.save();
+                        ctx.translate(x - 5, itemY + 15);
+                        ctx.rotate(-Math.PI / 2);
+                        ctx.fillText(itemText, 0, 0);
+                        ctx.restore();
+                    }
+                }
+            }
+
+            // Draw footer
+            ctx.textAlign = 'center';
+            ctx.font = 'italic 18px Arial';
+            ctx.fillStyle = design.accentColor;
+            ctx.fillText('Week 1 of 4 | Track your daily progress', canvas.width / 2, canvas.height - 30);
+        }
+
+        function generateMonthlyLayout(checklistItems) {
+            // Show monthly overview
+            const design = designs[selectedDesign];
+            
+            canvas.width = 1000;
+            canvas.height = 1200;
+            
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw gradient background
+            const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+            gradient.addColorStop(0, design.gradient[0]);
+            gradient.addColorStop(1, design.gradient[1]);
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Draw title
+            ctx.fillStyle = design.textColor;
+            ctx.font = 'bold 56px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('🌙 Ramadhan 2026', canvas.width / 2, 70);
+
+            // Draw subtitle
+            ctx.font = '28px Arial';
+            ctx.fillStyle = design.accentColor;
+            ctx.fillText('30-Day Tracker', canvas.width / 2, 115);
+
+            // Draw calendar grid (6 rows x 5 columns for 30 days)
+            const startX = 80;
+            const startY = 170;
+            const cellWidth = (canvas.width - 160) / 5;
+            const cellHeight = 150;
+
+            for (let i = 0; i < 30; i++) {
+                const row = Math.floor(i / 5);
+                const col = i % 5;
+                const x = startX + (col * cellWidth);
+                const y = startY + (row * cellHeight);
+
+                // Draw cell background
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+                ctx.fillRect(x + 5, y + 5, cellWidth - 10, cellHeight - 10);
+                
+                // Draw cell border
+                ctx.strokeStyle = design.textColor;
+                ctx.lineWidth = 2;
+                ctx.strokeRect(x + 5, y + 5, cellWidth - 10, cellHeight - 10);
+
+                // Draw day number
+                ctx.fillStyle = design.textColor;
+                ctx.font = 'bold 28px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(ramadhanDates[i].day, x + cellWidth / 2, y + 35);
+
+                // Draw date
+                ctx.font = '14px Arial';
+                ctx.fillStyle = design.accentColor;
+                ctx.fillText(ramadhanDates[i].date, x + cellWidth / 2, y + 55);
+
+                // Draw mini checkboxes
+                const checkboxStartY = y + 70;
+                for (let j = 0; j < Math.min(checklistItems.length, 5); j++) {
+                    const checkY = checkboxStartY + (j * 14);
+                    ctx.strokeStyle = design.textColor;
+                    ctx.lineWidth = 1;
+                    ctx.strokeRect(x + cellWidth / 2 - 20, checkY, 12, 12);
+                }
+            }
+
+            // Draw legend
+            ctx.textAlign = 'left';
+            ctx.font = 'bold 20px Arial';
+            ctx.fillStyle = design.textColor;
+            ctx.fillText('Daily Goals:', 100, canvas.height - 140);
+            
+            ctx.font = '16px Arial';
+            for (let i = 0; i < Math.min(checklistItems.length, 5); i++) {
+                const legendY = canvas.height - 110 + (i * 22);
+                ctx.strokeRect(100, legendY - 10, 12, 12);
+                const text = checklistItems[i].length > 40 ? checklistItems[i].substring(0, 37) + '...' : checklistItems[i];
+                ctx.fillText(text, 120, legendY);
+            }
+
+            // Draw footer
+            ctx.textAlign = 'center';
+            ctx.font = 'italic 18px Arial';
+            ctx.fillStyle = design.accentColor;
+            ctx.fillText('Check off your daily achievements', canvas.width / 2, canvas.height - 30);
+        }
+
         function drawDecorativeElements(design) {
             // Draw decorative stars/crescents
             ctx.fillStyle = design.accentColor;
@@ -494,11 +994,282 @@
             ctx.globalCompositeOperation = 'source-over';
         }
 
+        function drawSmallCrescent(x, y, radius, color) {
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            ctx.arc(x, y, radius, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            ctx.globalCompositeOperation = 'destination-out';
+            ctx.beginPath();
+            ctx.arc(x + radius/2, y - radius/4, radius, 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.globalCompositeOperation = 'source-over';
+        }
+
         function downloadPoster() {
             const link = document.createElement('a');
             link.download = 'ramadhan-2026-checklist.png';
             link.href = canvas.toDataURL();
             link.click();
+        }
+
+        function downloadBook() {
+            // Get selected checklist items
+            const checklistItems = [];
+            document.querySelectorAll('#checklistItems input[type="checkbox"]:checked').forEach(checkbox => {
+                const label = document.querySelector(`label[for="${checkbox.id}"]`);
+                checklistItems.push(label.textContent);
+            });
+
+            const design = designs[selectedDesign];
+
+            // Create PDF
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF({
+                orientation: selectedLayout === 'weekly' ? 'landscape' : 'portrait',
+                unit: 'mm',
+                format: 'a4'
+            });
+
+            // Generate pages based on layout
+            if (selectedLayout === 'daily') {
+                generateDailyPDF(pdf, checklistItems, design);
+            } else if (selectedLayout === 'weekly') {
+                generateWeeklyPDF(pdf, checklistItems, design);
+            } else if (selectedLayout === 'monthly') {
+                generateMonthlyPDF(pdf, checklistItems, design);
+            }
+
+            // Save PDF
+            pdf.save('ramadhan-2026-book-' + selectedLayout + '.pdf');
+        }
+
+        function generateDailyPDF(pdf, items, design) {
+            const pageWidth = pdf.internal.pageSize.getWidth();
+            const pageHeight = pdf.internal.pageSize.getHeight();
+
+            for (let day = 0; day < 30; day++) {
+                if (day > 0) pdf.addPage();
+
+                // Add background color (approximate gradient with rectangles)
+                const colors = [
+                    design.gradient[0].replace('#', ''),
+                    design.gradient[1].replace('#', '')
+                ];
+                const r1 = parseInt(colors[0].substring(0, 2), 16);
+                const g1 = parseInt(colors[0].substring(2, 4), 16);
+                const b1 = parseInt(colors[0].substring(4, 6), 16);
+                const r2 = parseInt(colors[1].substring(0, 2), 16);
+                const g2 = parseInt(colors[1].substring(2, 4), 16);
+                const b2 = parseInt(colors[1].substring(4, 6), 16);
+
+                for (let i = 0; i < 10; i++) {
+                    const ratio = i / 10;
+                    const r = Math.round(r1 + (r2 - r1) * ratio);
+                    const g = Math.round(g1 + (g2 - g1) * ratio);
+                    const b = Math.round(b1 + (b2 - b1) * ratio);
+                    pdf.setFillColor(r, g, b);
+                    pdf.rect(0, i * (pageHeight / 10), pageWidth, pageHeight / 10, 'F');
+                }
+
+                // Title
+                pdf.setTextColor(255, 255, 255);
+                pdf.setFontSize(36);
+                pdf.text('Day ' + (day + 1), pageWidth / 2, 30, { align: 'center' });
+
+                // Date
+                pdf.setFontSize(14);
+                pdf.text(ramadhanDates[day].date + ', 2026', pageWidth / 2, 40, { align: 'center' });
+
+                // Subtitle
+                pdf.setFontSize(18);
+                pdf.text('My Daily Goals', pageWidth / 2, 55, { align: 'center' });
+
+                // Checklist items
+                pdf.setFontSize(11);
+                let yPos = 70;
+                for (let i = 0; i < Math.min(items.length, 12); i++) {
+                    // Draw checkbox
+                    pdf.setDrawColor(255, 255, 255);
+                    pdf.rect(20, yPos - 3, 4, 4);
+                    
+                    // Draw text
+                    const text = items[i].length > 60 ? items[i].substring(0, 57) + '...' : items[i];
+                    pdf.text(text, 28, yPos);
+                    yPos += 8;
+                }
+
+                // Notes section
+                yPos += 15;
+                pdf.setFontSize(14);
+                pdf.text('Notes & Reflections', pageWidth / 2, yPos, { align: 'center' });
+                
+                // Lines for notes
+                pdf.setDrawColor(255, 255, 255);
+                pdf.setGlobalAlpha(0.5);
+                for (let i = 0; i < 5; i++) {
+                    yPos += 10;
+                    pdf.line(20, yPos, pageWidth - 20, yPos);
+                }
+
+                // Footer
+                pdf.setFontSize(10);
+                pdf.text((day + 1) + ' of 30', pageWidth / 2, pageHeight - 15, { align: 'center' });
+            }
+        }
+
+        function generateWeeklyPDF(pdf, items, design) {
+            const pageWidth = pdf.internal.pageSize.getWidth();
+            const pageHeight = pdf.internal.pageSize.getHeight();
+
+            for (let week = 0; week < 5; week++) { // 5 weeks (last week has 2 days)
+                if (week > 0) pdf.addPage();
+
+                // Add gradient background
+                const colors = [
+                    design.gradient[0].replace('#', ''),
+                    design.gradient[1].replace('#', '')
+                ];
+                const r1 = parseInt(colors[0].substring(0, 2), 16);
+                const g1 = parseInt(colors[0].substring(2, 4), 16);
+                const b1 = parseInt(colors[0].substring(4, 6), 16);
+                const r2 = parseInt(colors[1].substring(0, 2), 16);
+                const g2 = parseInt(colors[1].substring(2, 4), 16);
+                const b2 = parseInt(colors[1].substring(4, 6), 16);
+
+                for (let i = 0; i < 10; i++) {
+                    const ratio = i / 10;
+                    const r = Math.round(r1 + (r2 - r1) * ratio);
+                    const g = Math.round(g1 + (g2 - g1) * ratio);
+                    const b = Math.round(b1 + (b2 - b1) * ratio);
+                    pdf.setFillColor(r, g, b);
+                    pdf.rect(0, i * (pageHeight / 10), pageWidth, pageHeight / 10, 'F');
+                }
+
+                // Title
+                pdf.setTextColor(255, 255, 255);
+                pdf.setFontSize(24);
+                pdf.text('Week ' + (week + 1), pageWidth / 2, 20, { align: 'center' });
+
+                // Date range
+                const startDay = week * 7;
+                const endDay = Math.min(startDay + 6, 29);
+                pdf.setFontSize(12);
+                pdf.text('Days ' + (startDay + 1) + '-' + (endDay + 1), pageWidth / 2, 28, { align: 'center' });
+
+                // Draw 7-column grid
+                const colWidth = (pageWidth - 20) / 7;
+                const startX = 10;
+                const startY = 40;
+
+                for (let d = 0; d < 7 && (startDay + d) < 30; d++) {
+                    const x = startX + (d * colWidth);
+                    
+                    // Day header
+                    pdf.setFontSize(10);
+                    pdf.text('Day ' + (startDay + d + 1), x + colWidth / 2, startY, { align: 'center' });
+                    pdf.setFontSize(8);
+                    pdf.text(ramadhanDates[startDay + d].date, x + colWidth / 2, startY + 5, { align: 'center' });
+
+                    // Draw checkboxes
+                    pdf.setDrawColor(255, 255, 255);
+                    for (let i = 0; i < Math.min(items.length, 15); i++) {
+                        const checkY = startY + 12 + (i * 8);
+                        pdf.rect(x + colWidth / 2 - 1.5, checkY, 3, 3);
+                    }
+                }
+
+                // Legend on the side
+                pdf.setFontSize(8);
+                let legendY = startY + 12;
+                pdf.text('Goals:', startX - 5, legendY - 5);
+                for (let i = 0; i < Math.min(items.length, 15); i++) {
+                    const text = items[i].substring(0, 20);
+                    // Rotate text for legend (simplified - just show index)
+                    pdf.text((i + 1) + '.', startX - 5, legendY + (i * 8));
+                }
+
+                // Footer
+                pdf.setFontSize(10);
+                pdf.text('Week ' + (week + 1) + ' of 5', pageWidth / 2, pageHeight - 10, { align: 'center' });
+            }
+        }
+
+        function generateMonthlyPDF(pdf, items, design) {
+            const pageWidth = pdf.internal.pageSize.getWidth();
+            const pageHeight = pdf.internal.pageSize.getHeight();
+
+            // Add gradient background
+            const colors = [
+                design.gradient[0].replace('#', ''),
+                design.gradient[1].replace('#', '')
+            ];
+            const r1 = parseInt(colors[0].substring(0, 2), 16);
+            const g1 = parseInt(colors[0].substring(2, 4), 16);
+            const b1 = parseInt(colors[0].substring(4, 6), 16);
+            const r2 = parseInt(colors[1].substring(0, 2), 16);
+            const g2 = parseInt(colors[1].substring(2, 4), 16);
+            const b2 = parseInt(colors[1].substring(4, 6), 16);
+
+            for (let i = 0; i < 10; i++) {
+                const ratio = i / 10;
+                const r = Math.round(r1 + (r2 - r1) * ratio);
+                const g = Math.round(g1 + (g2 - g1) * ratio);
+                const b = Math.round(b1 + (b2 - b1) * ratio);
+                pdf.setFillColor(r, g, b);
+                pdf.rect(0, i * (pageHeight / 10), pageWidth, pageHeight / 10, 'F');
+            }
+
+            // Title
+            pdf.setTextColor(255, 255, 255);
+            pdf.setFontSize(28);
+            pdf.text('Ramadhan 2026', pageWidth / 2, 25, { align: 'center' });
+            pdf.setFontSize(16);
+            pdf.text('30-Day Tracker', pageWidth / 2, 35, { align: 'center' });
+
+            // Draw calendar grid (6 rows x 5 columns)
+            const cellWidth = (pageWidth - 40) / 5;
+            const cellHeight = (pageHeight - 90) / 6;
+            const startX = 20;
+            const startY = 50;
+
+            pdf.setDrawColor(255, 255, 255);
+            pdf.setFontSize(10);
+
+            for (let i = 0; i < 30; i++) {
+                const row = Math.floor(i / 5);
+                const col = i % 5;
+                const x = startX + (col * cellWidth);
+                const y = startY + (row * cellHeight);
+
+                // Draw cell
+                pdf.rect(x, y, cellWidth, cellHeight);
+
+                // Day number
+                pdf.text('Day ' + (i + 1), x + cellWidth / 2, y + 8, { align: 'center' });
+                
+                // Date
+                pdf.setFontSize(7);
+                pdf.text(ramadhanDates[i].date, x + cellWidth / 2, y + 12, { align: 'center' });
+
+                // Mini checkboxes
+                pdf.setFontSize(8);
+                for (let j = 0; j < Math.min(items.length, 5); j++) {
+                    const checkY = y + 16 + (j * 5);
+                    pdf.rect(x + cellWidth / 2 - 2, checkY, 2, 2);
+                }
+                pdf.setFontSize(10);
+            }
+
+            // Legend
+            pdf.setFontSize(9);
+            pdf.text('Daily Goals:', 20, pageHeight - 25);
+            pdf.setFontSize(8);
+            for (let i = 0; i < Math.min(items.length, 5); i++) {
+                const text = (i + 1) + '. ' + items[i].substring(0, 35);
+                pdf.text(text, 20, pageHeight - 18 + (i * 4));
+            }
         }
 
         // Generate initial poster on page load
