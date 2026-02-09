@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ramadhan 2026 Checklist Planner</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        h1 {
+            color: #667eea;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .content-wrapper {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 40px;
+            margin-bottom: 30px;
+        }
+
+        .checklist-section {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 15px;
+        }
+
+        .checklist-section h2 {
+            color: #764ba2;
+            margin-bottom: 20px;
+        }
+
+        .checklist-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            margin-bottom: 10px;
+            background: white;
+            border-radius: 8px;
+            transition: transform 0.2s;
+        }
+
+        .checklist-item:hover {
+            transform: translateX(5px);
+        }
+
+        .checklist-item input[type="checkbox"] {
+            margin-right: 12px;
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+
+        .checklist-item label {
+            cursor: pointer;
+            flex: 1;
+        }
+
+        .design-section {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 15px;
+        }
+
+        .design-section h2 {
+            color: #764ba2;
+            margin-bottom: 20px;
+        }
+
+        .design-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+        }
+
+        .design-option {
+            cursor: pointer;
+            border: 3px solid #ddd;
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            transition: all 0.3s;
+            background: white;
+        }
+
+        .design-option:hover {
+            transform: scale(1.05);
+            border-color: #667eea;
+        }
+
+        .design-option.active {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+
+        .design-preview {
+            width: 100%;
+            height: 100px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .design1 { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .design2 { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+        .design3 { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+        .design4 { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
+        .design5 { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
+        .design6 { background: linear-gradient(135deg, #30cfd0 0%, #330867 100%); }
+
+        .poster-preview {
+            text-align: center;
+            margin: 30px 0;
+        }
+
+        .poster-preview h2 {
+            color: #764ba2;
+            margin-bottom: 20px;
+        }
+
+        #posterCanvas {
+            max-width: 100%;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 15px 40px;
+            font-size: 1.1em;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-weight: bold;
+        }
+
+        .generate-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .generate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .download-btn {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            color: white;
+        }
+
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(67, 233, 123, 0.4);
+        }
+
+        .download-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        @media (max-width: 768px) {
+            .content-wrapper {
+                grid-template-columns: 1fr;
+            }
+
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 1.8em;
+            }
+
+            .design-options {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            color: #666;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🌙 Ramadhan 2026 Checklist Planner</h1>
+            <p class="subtitle">Create your personalized Ramadhan checklist poster</p>
+            <p class="subtitle"><em>Ramadhan 2026: Expected to start around February 17, 2026</em></p>
+        </header>
+
+        <div class="content-wrapper">
+            <div class="checklist-section">
+                <h2>📝 Select Your Activities</h2>
+                <div id="checklistItems">
+                    <div class="checklist-item">
+                        <input type="checkbox" id="item1" checked>
+                        <label for="item1">Pray 5 daily prayers (Salah)</label>
+                    </div>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="item2" checked>
+                        <label for="item2">Read Quran daily</label>
+                    </div>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="item3" checked>
+                        <label for="item3">Fast from dawn to sunset</label>
+                    </div>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="item4" checked>
+                        <label for="item4">Give Sadaqah (charity)</label>
+                    </div>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="item5" checked>
+                        <label for="item5">Attend Taraweeh prayers</label>
+                    </div>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="item6" checked>
+                        <label for="item6">Make Dua (supplication)</label>
+                    </div>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="item7" checked>
+                        <label for="item7">Seek Laylat al-Qadr (Night of Power)</label>
+                    </div>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="item8" checked>
+                        <label for="item8">Perform Dhikr (remembrance of Allah)</label>
+                    </div>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="item9" checked>
+                        <label for="item9">Help prepare Iftar for others</label>
+                    </div>
+                    <div class="checklist-item">
+                        <input type="checkbox" id="item10" checked>
+                        <label for="item10">Increase good deeds and kindness</label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="design-section">
+                <h2>🎨 Choose Your Design</h2>
+                <div class="design-options">
+                    <div class="design-option active" data-design="1">
+                        <div class="design-preview design1"></div>
+                        <p>Purple Gradient</p>
+                    </div>
+                    <div class="design-option" data-design="2">
+                        <div class="design-preview design2"></div>
+                        <p>Pink Sunset</p>
+                    </div>
+                    <div class="design-option" data-design="3">
+                        <div class="design-preview design3"></div>
+                        <p>Ocean Blue</p>
+                    </div>
+                    <div class="design-option" data-design="4">
+                        <div class="design-preview design4"></div>
+                        <p>Fresh Green</p>
+                    </div>
+                    <div class="design-option" data-design="5">
+                        <div class="design-preview design5"></div>
+                        <p>Warm Sunrise</p>
+                    </div>
+                    <div class="design-option" data-design="6">
+                        <div class="design-preview design6"></div>
+                        <p>Deep Ocean</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="button-group">
+            <button class="generate-btn" onclick="generatePoster()">✨ Generate Poster</button>
+            <button class="download-btn" id="downloadBtn" onclick="downloadPoster()" disabled>⬇️ Download Poster</button>
+        </div>
+
+        <div class="poster-preview">
+            <h2>Your Ramadhan Poster</h2>
+            <canvas id="posterCanvas" width="800" height="1200"></canvas>
+        </div>
+
+        <div class="footer">
+            <p>May Allah accept your worship and good deeds during Ramadhan 2026 🤲</p>
+        </div>
+    </div>
+
+    <script>
+        let selectedDesign = 1;
+        const canvas = document.getElementById('posterCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // Design configurations
+        const designs = {
+            1: { gradient: ['#667eea', '#764ba2'], textColor: '#ffffff', accentColor: '#ffd700' },
+            2: { gradient: ['#f093fb', '#f5576c'], textColor: '#ffffff', accentColor: '#fff9e6' },
+            3: { gradient: ['#4facfe', '#00f2fe'], textColor: '#ffffff', accentColor: '#fff44f' },
+            4: { gradient: ['#43e97b', '#38f9d7'], textColor: '#ffffff', accentColor: '#1a5f42' },
+            5: { gradient: ['#fa709a', '#fee140'], textColor: '#ffffff', accentColor: '#8b4513' },
+            6: { gradient: ['#30cfd0', '#330867'], textColor: '#ffffff', accentColor: '#ffd700' }
+        };
+
+        // Handle design selection
+        document.querySelectorAll('.design-option').forEach(option => {
+            option.addEventListener('click', function() {
+                document.querySelectorAll('.design-option').forEach(opt => opt.classList.remove('active'));
+                this.classList.add('active');
+                selectedDesign = parseInt(this.dataset.design);
+            });
+        });
+
+        function generatePoster() {
+            // Get selected checklist items
+            const checklistItems = [];
+            document.querySelectorAll('#checklistItems input[type="checkbox"]:checked').forEach(checkbox => {
+                const label = document.querySelector(`label[for="${checkbox.id}"]`);
+                checklistItems.push(label.textContent);
+            });
+
+            if (checklistItems.length === 0) {
+                alert('Please select at least one checklist item!');
+                return;
+            }
+
+            // Get design configuration
+            const design = designs[selectedDesign];
+
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Draw gradient background
+            const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+            gradient.addColorStop(0, design.gradient[0]);
+            gradient.addColorStop(1, design.gradient[1]);
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Add decorative elements
+            drawDecorativeElements(design);
+
+            // Draw title
+            ctx.fillStyle = design.textColor;
+            ctx.font = 'bold 60px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('🌙 Ramadhan 2026', canvas.width / 2, 100);
+
+            ctx.font = 'bold 40px Arial';
+            ctx.fillText('Checklist', canvas.width / 2, 160);
+
+            // Draw subtitle
+            ctx.font = '24px Arial';
+            ctx.fillStyle = design.accentColor;
+            ctx.fillText('My Spiritual Journey', canvas.width / 2, 210);
+
+            // Draw checklist items
+            const startY = 280;
+            const itemHeight = 70;
+            const maxItems = Math.min(checklistItems.length, 12);
+
+            ctx.textAlign = 'left';
+            ctx.font = '28px Arial';
+
+            for (let i = 0; i < maxItems; i++) {
+                const y = startY + (i * itemHeight);
+                
+                // Draw checkbox background
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+                ctx.fillRect(80, y - 35, canvas.width - 160, 60);
+                
+                // Draw checkbox
+                ctx.fillStyle = design.textColor;
+                ctx.strokeStyle = design.textColor;
+                ctx.lineWidth = 3;
+                ctx.strokeRect(100, y - 20, 30, 30);
+                
+                // Draw checkmark
+                ctx.beginPath();
+                ctx.moveTo(105, y - 5);
+                ctx.lineTo(112, y + 2);
+                ctx.lineTo(125, y - 15);
+                ctx.stroke();
+                
+                // Draw item text
+                ctx.fillStyle = design.textColor;
+                ctx.fillText(checklistItems[i], 150, y + 5);
+            }
+
+            // Draw footer
+            ctx.textAlign = 'center';
+            ctx.font = 'italic 22px Arial';
+            ctx.fillStyle = design.accentColor;
+            const footerY = canvas.height - 80;
+            ctx.fillText('May Allah accept your worship', canvas.width / 2, footerY);
+            ctx.fillText('and grant you success 🤲', canvas.width / 2, footerY + 35);
+
+            // Enable download button
+            document.getElementById('downloadBtn').disabled = false;
+
+            // Scroll to poster
+            canvas.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+
+        function drawDecorativeElements(design) {
+            // Draw decorative stars/crescents
+            ctx.fillStyle = design.accentColor;
+            
+            // Top corners
+            drawStar(100, 100, 5, 20, 10);
+            drawStar(700, 100, 5, 20, 10);
+            
+            // Bottom corners
+            drawStar(100, 1100, 5, 20, 10);
+            drawStar(700, 1100, 5, 20, 10);
+            
+            // Side decorations
+            for (let i = 0; i < 3; i++) {
+                const y = 400 + (i * 250);
+                drawCrescent(50, y, 15);
+                drawCrescent(750, y, 15);
+            }
+        }
+
+        function drawStar(cx, cy, spikes, outerRadius, innerRadius) {
+            let rot = Math.PI / 2 * 3;
+            let x = cx;
+            let y = cy;
+            const step = Math.PI / spikes;
+
+            ctx.beginPath();
+            ctx.moveTo(cx, cy - outerRadius);
+            for (let i = 0; i < spikes; i++) {
+                x = cx + Math.cos(rot) * outerRadius;
+                y = cy + Math.sin(rot) * outerRadius;
+                ctx.lineTo(x, y);
+                rot += step;
+
+                x = cx + Math.cos(rot) * innerRadius;
+                y = cy + Math.sin(rot) * innerRadius;
+                ctx.lineTo(x, y);
+                rot += step;
+            }
+            ctx.lineTo(cx, cy - outerRadius);
+            ctx.closePath();
+            ctx.fill();
+        }
+
+        function drawCrescent(x, y, radius) {
+            ctx.beginPath();
+            ctx.arc(x, y, radius, 0, 2 * Math.PI);
+            ctx.fill();
+            
+            ctx.globalCompositeOperation = 'destination-out';
+            ctx.beginPath();
+            ctx.arc(x + radius/2, y - radius/4, radius, 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.globalCompositeOperation = 'source-over';
+        }
+
+        function downloadPoster() {
+            const link = document.createElement('a');
+            link.download = 'ramadhan-2026-checklist.png';
+            link.href = canvas.toDataURL();
+            link.click();
+        }
+
+        // Generate initial poster on page load
+        window.addEventListener('load', function() {
+            setTimeout(generatePoster, 500);
+        });
+    </script>
+</body>
+</html>
